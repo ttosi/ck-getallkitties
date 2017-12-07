@@ -1,0 +1,24 @@
+{
+  "name": "ck-getallkitties",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttosi/ck-getallkitties.git"
+  },
+  "author": "Tony S. Tosi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ttosi/ck-getallkitties/issues"
+  },
+  "homepage": "https://github.com/ttosi/ck-getallkitties#readme",
+  "dependencies": {
+    "mongodb": "^3.0.0-rc0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
+  }
+}
