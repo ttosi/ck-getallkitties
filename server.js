@@ -2,6 +2,7 @@ const MongoClient = require('mongodb').MongoClient;
 const request = require('request-promise');
 const assert = require('assert');
 const cheerio = require('cheerio');
+const fs = require('fs')
 
 const cryptoKittiesClient = require('./cryptokitties-client');
 
@@ -11,13 +12,12 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
     assert.equal(null, err);
 
     let database = db.db('cryptokitties');
-    let startId = 90;
-    let endId = 105;
+    let startId = 103;
+    let endId = 106;
     let id = startId;
     let kittyCount = endId - startId + 1;
 
     let getCatInterval = setInterval(() => {
-        //console.log(`Fetching kitty with id ${ id }.`);
         getKitten(id).then((kitten) => {
             getKittenSalesData(id).then((res) => {
                 let js = JSON.parse(res);
@@ -28,11 +28,11 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
                 });
             }).catch((err) => {
                 kittyCount--;
-                console.error(`SKIPPING - Unable to get sales data for kitty ${ id }.`);
+                logError(`SKIPPING - Unable to get sales data for kitty ${ id }.`);
             });
         }).catch((err) => {
             kittyCount--;
-            console.error(`SKIPPNING - Kitty ${ id } not found.`);
+            logError(`SKIPPNING - Kitty ${ id } not found.`);
         });
 
         id++
@@ -52,23 +52,10 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
 
 const getKitten = (id, callback) => {
     return cryptoKittiesClient.getKitten(id);
-    
-    // cryptoKittiesClient.getKitten(id).then((kitten) => {
-    //     //callback(kitten);
-    //     return request
-    // }).catch((err) => {
-    //     callback(err.statusCode)
-    // });
 };
 
 const getKittenSalesData = (id, callback) => {
-   return request(`${ kittySalesUrl}${ id }`); //, (err, res, json) => {
-    //     if (err) {
-    //         console.log(err);
-    //     }
-    //     let js = JSON.parse(json);
-    //     callback(js.sales);
-    // });
+   return request(`${ kittySalesUrl}${ id }`);
 };
 
 const insertKitten = (kitten, db, callback) => {
@@ -86,8 +73,7 @@ const insertKitten = (kitten, db, callback) => {
     });
 };
 
-const wait = (ms) => {
-    var waitDateOne = new Date();
-    while ((new Date()) - waitDateOne <= ms) {
-    }
-}
+const logError = (err) => {
+    fs.appendFileSync('error.log', `${ err }\n`);
+    console.error(err);
+};
