@@ -11,32 +11,35 @@ MongoClient.connect('mongodb://127.0.0.1:27017/', (err, db) => {
     assert.equal(null, err);
 
     let database = db.db('cryptokitties');
-    let startId = 11;
-    let endId = 102;
+    let startId = 1001;
+    let endId = 1500;
     let id = startId;
     let kittyCount = endId - startId + 1;
 
     let getCatInterval = setInterval(() => {
-        console.log(`Fetching kitty with id ${ id }.`);
+        //console.log(`Fetching kitty with id ${ id }.`);
         getKitten(id).then((kitten) => {
-            if (kitten !== 404) {
-                getKittenSalesData(id).then((res) => {
-                    let js = JSON.parse(res);
-                    kitten.sales = js.sales;
-                    insertKitten(kitten, database, () => {
-                        console.log(`Captured kitty ${ kitten.name } [${ kitten.id }]!`);
-                        kittyCount--;
-                    });
+            getKittenSalesData(id).then((res) => {
+                let js = JSON.parse(res);
+                kitten.sales = js.sales;
+                insertKitten(kitten, database, () => {
+                kittyCount--;
+                console.log(`Captured kitty ${ kitten.name } (${ kitten.id })!`);
                 });
-            } else {
-                console.log(`Kitten ${ id } not found.`)
-            }
+            }).catch((err) => {
+                kittyCount--;
+                console.error(`SKIPPING - Unable to get sales data for kitty ${ id }.`);
+            });
+        }).catch((err) => {
+            kittyCount--;
+            console.error(`SKIPPNING - Kitty ${ id } not found.`);
         });
+
         id++
+
         if(id > endId) {
             clearInterval(getCatInterval);
             let waitToComplete = setInterval(() => {
-                console.log(kittyCount);
                 if(kittyCount === 0) {
                     clearInterval(waitToComplete);
                     db.close();
