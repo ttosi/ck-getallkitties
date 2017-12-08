@@ -11,8 +11,8 @@ MongoClient.connect('mongodb://127.0.0.1:27017/', (err, db) => {
     assert.equal(null, err);
 
     let database = db.db('cryptokitties');
-    let startId = 1;
-    let endId = 10;
+    let startId = 11;
+    let endId = 102;
     let id = startId;
     let kittyCount = endId - startId + 1;
 
