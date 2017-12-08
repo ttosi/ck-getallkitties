@@ -11,19 +11,20 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
     assert.equal(null, err);
 
     let database = db.db('cryptokitties');
-    let startId = 120;
-    let endId = 130;
+    let startId = 1;
+    let endId = 10;
     let id = startId;
-    let kittyCount = endId - startId;
+    let kittyCount = endId - startId + 1;
 
-    let interval = setInterval(function() {
+    let getCatInterval = setInterval(() => {
         console.log(`Fetching kitty with id ${ id }.`);
-        getKitten(id, (kitten) => {
+        getKitten(id).then((kitten) => {
             if (kitten !== 404) {
-                getKittenSalesData(id, (sales) => {
-                    kitten.sales = sales;
+                getKittenSalesData(id).then((res) => {
+                    let js = JSON.parse(res);
+                    kitten.sales = js.sales;
                     insertKitten(kitten, database, () => {
-                        console.log(`${ kittyCount } - Captured kitty ${ kitten.name } [${ kitten.id }]!`);
+                        console.log(`Captured kitty ${ kitten.name } [${ kitten.id }]!`);
                         kittyCount--;
                     });
                 });
@@ -33,32 +34,38 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
         });
         id++
         if(id > endId) {
-            clearInterval(interval);
-            while()
-            setTimeout(() => {
-                db.close();
-                console.log('Complete.');
-            }, 2000);
+            clearInterval(getCatInterval);
+            let waitToComplete = setInterval(() => {
+                console.log(kittyCount);
+                if(kittyCount === 0) {
+                    clearInterval(waitToComplete);
+                    db.close();
+                    console.log('Complete.');
+                }
+            }, 1000);
         }
     }, 1000);
 });
 
 const getKitten = (id, callback) => {
-    cryptoKittiesClient.getKitten(id).then((kitten) => {
-        callback(kitten);
-    }).catch((err) => {
-        callback(err.statusCode)
-    });
+    return cryptoKittiesClient.getKitten(id);
+    
+    // cryptoKittiesClient.getKitten(id).then((kitten) => {
+    //     //callback(kitten);
+    //     return request
+    // }).catch((err) => {
+    //     callback(err.statusCode)
+    // });
 };
 
 const getKittenSalesData = (id, callback) => {
-    request(`${ kittySalesUrl}${ id }`, (err, res, json) => {
-        if (err) {
-            console.log(err);
-        }
-        let js = JSON.parse(json);
-        callback(js.sales);
-    });
+   return request(`${ kittySalesUrl}${ id }`); //, (err, res, json) => {
+    //     if (err) {
+    //         console.log(err);
+    //     }
+    //     let js = JSON.parse(json);
+    //     callback(js.sales);
+    // });
 };
 
 const insertKitten = (kitten, db, callback) => {
