@@ -14,6 +14,7 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
     let startId = 120;
     let endId = 130;
     let id = startId;
+    let kittyCount = endId - startId;
 
     let interval = setInterval(function() {
         console.log(`Fetching kitty with id ${ id }.`);
@@ -22,7 +23,8 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
                 getKittenSalesData(id, (sales) => {
                     kitten.sales = sales;
                     insertKitten(kitten, database, () => {
-                        console.log(`Captured kitty ${ kitten.name } [${ kitten.id }]!`);
+                        console.log(`${ kittyCount } - Captured kitty ${ kitten.name } [${ kitten.id }]!`);
+                        kittyCount--;
                     });
                 });
             } else {
@@ -32,6 +34,7 @@ MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
         id++
         if(id > endId) {
             clearInterval(interval);
+            while()
             setTimeout(() => {
                 db.close();
                 console.log('Complete.');
