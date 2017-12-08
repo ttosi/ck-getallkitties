@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/ttosi/ck-getallkitties#readme",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
+    "commander": "^2.12.2",
+    "dotenv": "^4.0.0",
     "mongodb": "^3.0.0-rc0",
     "request": "^2.83.0",
     "request-promise": "^4.2.2"
