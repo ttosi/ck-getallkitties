@@ -1,54 +1,80 @@
 const MongoClient = require('mongodb').MongoClient;
+const request = require('request-promise');
 const assert = require('assert');
+const cheerio = require('cheerio');
 
 const cryptoKittiesClient = require('./cryptokitties-client');
-const kittySalesClient = require('./kittysales-client');
+
+const kittySalesUrl = `http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=`
 
 MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
     assert.equal(null, err);
-    
+
     let database = db.db('cryptokitties');
-    let kittenId = 2;
+    let startId = 120;
+    let endId = 130;
+    let id = startId;
 
-    getKitten(kittenId, (kitten) => {
-        console.log('got kitten');
-        getKittenSalesData(kittenId, (sales) => {
-            console.log('got sales');
-            kitten.sales = sales;
-            console.log(JSON.stringify(kitten))
+    let interval = setInterval(function() {
+        console.log(`Fetching kitty with id ${ id }.`);
+        getKitten(id, (kitten) => {
+            if (kitten !== 404) {
+                getKittenSalesData(id, (sales) => {
+                    kitten.sales = sales;
+                    insertKitten(kitten, database, () => {
+                        console.log(`Captured kitty ${ kitten.name } [${ kitten.id }]!`);
+                    });
+                });
+            } else {
+                console.log(`Kitten ${ id } not found.`)
+            }
         });
-    });
-
-    // insertKitten({
-    //     name: 'kitty',
-    //     age: 13
-    // }, database, () => {
-    //     console.log('inserted cat');
-    //     db.close();
-    // });
+        id++
+        if(id > endId) {
+            clearInterval(interval);
+            setTimeout(() => {
+                db.close();
+                console.log('Complete.');
+            }, 2000);
+        }
+    }, 1000);
 });
 
 const getKitten = (id, callback) => {
-    cryptoKittiesClient.getKitten(id).then(kitten => {
+    cryptoKittiesClient.getKitten(id).then((kitten) => {
         callback(kitten);
+    }).catch((err) => {
+        callback(err.statusCode)
     });
 };
 
 const getKittenSalesData = (id, callback) => {
-    kittySalesClient.getKitten(id).then(response => {
-        if (response.sales.length === 1) {
-            callback(response.sales);
+    request(`${ kittySalesUrl}${ id }`, (err, res, json) => {
+        if (err) {
+            console.log(err);
         }
+        let js = JSON.parse(json);
+        callback(js.sales);
     });
 };
 
 const insertKitten = (kitten, db, callback) => {
-    db.collection('kittens').insertOne(kitten, (err, res) => {
-        assert.equal(null, err);
-        callback();
+    db.collection('kittens').findOne({
+        id: kitten.id
+    }, (err, result) => {
+        if (!result) {
+            db.collection('kittens').insertOne(kitten, (err, res) => {
+                assert.equal(null, err);
+                callback();
+            });
+        } else {
+            callback(kitten)
+        }
     });
 };
 
-const getAllKitties = function (startId) {
-
+const wait = (ms) => {
+    var waitDateOne = new Date();
+    while ((new Date()) - waitDateOne <= ms) {
+    }
 }
