@@ -7,12 +7,12 @@ const cryptoKittiesClient = require('./cryptokitties-client');
 
 const kittySalesUrl = `http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=`
 
-MongoClient.connect('mongodb://192.168.16.33:27017/', (err, db) => {
+MongoClient.connect('mongodb://127.0.0.1:27017/', (err, db) => {
     assert.equal(null, err);
 
     let database = db.db('cryptokitties');
-    let startId = 120;
-    let endId = 130;
+    let startId = 1;
+    let endId = 10;
     let id = startId;
 
     let interval = setInterval(function() {
