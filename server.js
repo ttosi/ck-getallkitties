@@ -11,7 +11,8 @@ require('dotenv').config();
 const cryptoKittiesClient = require('./cryptokitties-client');
 
 // config
-const kittySalesUrl = `http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=`;
+const kittySalesUrl = 'http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=';
+const kittyExplorerUrl = 'http://www.kittyexplorer.com/api/kitties/';
 const requestIntervalMillis = 750;
 let errorLogFileName;
 
@@ -44,7 +45,8 @@ MongoClient.connect(process.env.DB, (err, db) => {
             if(!isCaptured) {
                 getKitten(id).then((kitten) => {
                     getKittenSalesData(id).then((res) => {
-                        kitten.sales = JSON.parse(res).sales;
+                        //kitten.sales = JSON.parse(res).sales;
+                        kitten.sales = JSON.parse(res);
                         insertKitten(kitten, database, () => {
                             kittyRequestsRmaining--;
                             console.log(`Captured kitty ${ kitten.name } (${ kitten.id })`);
@@ -86,7 +88,8 @@ const getKitten = (id, callback) => {
 
 // return array of all sales from kittysales
 const getKittenSalesData = (id, callback) => {
-   return request(`${ kittySalesUrl}${ id }`);
+    //return request(`${ kittySalesUrl}${ id }`);
+    return request(`${ kittyExplorerUrl}${ id }`);
 };
 
 const isKittenCaptured = (id, db, callback) => {

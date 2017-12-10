@@ -9,8 +9,8 @@
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}\\server.js",
-            //"args": ["--startid",  "1", "--endid", "10"]
-            "args": ["--from-log",  "error_from-1_to-10_1512766186992.log"]
+            "args": ["--startid",  "11", "--endid", "20"]
+            //"args": ["--from-log",  "error_from-1_to-10_1512766186992.log"]
         }
     ]
 }
