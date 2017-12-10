@@ -15,9 +15,10 @@ const kittySalesUrl = `http://kittysales.herokuapp.com/data?offset=0&count=25&fi
 const requestIntervalMillis = 750;
 let errorLogFileName;
 
+// parse command line args
 args.version('0.0.1')
-    .option('-s, --startid [n]', 'Starting kitten id')
-    .option('-e, --endid [n]', 'Ending kitten id')
+    .option('-s, --start-id [n]', 'Starting kitten id')
+    .option('-e, --end-id [n]', 'Ending kitten id')
     .option('-fl, --from-log [value]', 'Process kittens from error.log')
     .parse(process.argv);
 
@@ -28,7 +29,7 @@ MongoClient.connect(process.env.DB, (err, db) => {
     const database = db.db('cryptokitties');
 
     // unique log file name for this run
-    errorLogFileName = `errors_${ args.startid }-${ args.endid }_${ new Date().getTime() }.log`;
+    errorLogFileName = `errors_${ args.startId }-${ args.endId }_${ new Date().getTime() }.log`;
     
     let kittyRequestsRmaining = idsToProcess.length;
     
@@ -108,14 +109,14 @@ const logError = (err) => {
     console.error(err);
 };
 
-// if a startid and endid is provided, create array
+// if a start-id and end-id is provided, create array
 // of individual ids within that range
 // if a from-log file is provided, parse the csv
 // file to create the array of ids
 function getKittenIds() {
     let ids = [];
-    if (args.startid && args.endid) {
-        for(let id = args.startid; id <= args.endid; id++) {
+    if (args.startId && args.endId) {
+        for(let id = args.startId; id <= args.endId; id++) {
             ids.push(id);
         }
     } else if (args.fromLog) {
