@@ -11,11 +11,11 @@ require('dotenv').config();
 const cryptoKittiesClient = require('./cryptokitties-client');
 
 // config
-const kittySalesUrl = `http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=`;
-const requestIntervalMillis = 750;
+const kittySalesUrl = 'http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=';
+const kittyExplorerUrl = 'http://www.kittyexplorer.com/api/kitties/';
+const requestIntervalMillis = 250;
 let errorLogFileName;
 
-// parse command line args
 args.version('0.0.1')
     .option('-s, --start-id [n]', 'Starting kitten id')
     .option('-e, --end-id [n]', 'Ending kitten id')
@@ -46,17 +46,20 @@ MongoClient.connect(process.env.DB, (err, db) => {
                 getKitten(id).then((kitten) => {
                     getKittenSalesData(id).then((res) => {
                         kitten.sales = JSON.parse(res).sales;
+                        //kitten.sales = JSON.parse(res);
                         insertKitten(kitten, database, () => {
                             kittyRequestsRmaining--;
-                            console.log(`Captured kitty ${ kitten.name } (${ kitten.id })`);
+                            console.log(`Captured kitty ${ kitten.name } - ${ kitten.id } (remaining ${ kittyRequestsRmaining })`);
                         });
                     }).catch((err) => {
                         kittyRequestsRmaining--;
-                        logError(`${ id },unable to get sales data from kittysales.herokuapp.com`);
+                        console.error(`${ id },unable to get sales data`);
+                        //logError(`${ id },unable to get sales data`);
                     });;
                 }).catch((err) => {
                     kittyRequestsRmaining--;
-                    logError(`${ id },not found at cryptokitties.co`);
+                    console.error(`${ id },not found at cryptokitties.co`);
+                    //logError(`${ id },not found at cryptokitties.co`);
                 });
             } else {
                 kittyRequestsRmaining--;
@@ -87,7 +90,8 @@ const getKitten = (id, callback) => {
 
 // return array of all sales from kittysales
 const getKittenSalesData = (id, callback) => {
-   return request(`${ kittySalesUrl}${ id }`);
+    return request(`${ kittySalesUrl}${ id }`);
+    //return request(`${ kittyExplorerUrl}${ id }`);
 };
 
 const isKittenCaptured = (id, db, callback) => {
@@ -105,7 +109,7 @@ const insertKitten = (kitten, db, callback) => {
 
 // doh!
 const logError = (err) => {
-    fs.appendFileSync(errorLogFileName, `${ err },${ new Date().getTime() }\n`);
+    fs.appendFileSync(`errors/${ errorLogFileName }`, `errors${ err },${ new Date().getTime() }\n`);
     console.error(err);
 };
 
@@ -116,7 +120,7 @@ const logError = (err) => {
 function getKittenIds() {
     let ids = [];
     if (args.startId && args.endId) {
-        for(let id = args.startId; id <= args.endId; id++) {
+        for(let id = parseInt(args.startId); id <= parseInt(args.endId); id++) {
             ids.push(id);
         }
     } else if (args.fromLog) {
@@ -131,4 +135,3 @@ function getKittenIds() {
     }
     return ids;
 };
-
