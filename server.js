@@ -13,7 +13,7 @@ const cryptoKittiesClient = require('./cryptokitties-client');
 // config
 const kittySalesUrl = 'http://kittysales.herokuapp.com/data?offset=0&count=25&filterBy=kittenID&filterValue=';
 const kittyExplorerUrl = 'http://www.kittyexplorer.com/api/kitties/';
-const requestIntervalMillis = 250;
+const requestIntervalMillis = 150;
 let errorLogFileName;
 
 args.version('0.0.1')
@@ -24,6 +24,7 @@ args.version('0.0.1')
 
 let idsToProcess = getKittenIds();
 
+console.time("runtime");
 MongoClient.connect(process.env.DB, (err, db) => {
     assert.equal(null, err);
     const database = db.db('cryptokitties');
@@ -76,6 +77,7 @@ MongoClient.connect(process.env.DB, (err, db) => {
                 if (kittyRequestsRmaining === 0) {
                     clearInterval(waitToComplete);
                     db.close();
+                    console.timeEnd("runtime");
                     console.log('Complete.');
                 }
             }, 1000);

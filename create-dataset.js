@@ -9,23 +9,23 @@ MongoClient.connect(process.env.DB, (err, db) => {
     const kitdb = database.collection('kittens');
     let processed = 0;
 
-    if (fs.existsSync('features.dat')) fs.unlinkSync('features.dat');
-    if (fs.existsSync('labels.dat')) fs.unlinkSync('labels.dat');
+    if (fs.existsSync('features_train.dat')) fs.unlinkSync('features_train.dat');
+    if (fs.existsSync('labels_train.dat')) fs.unlinkSync('labels_train.dat');
 
     kitdb.count((err, count) => {
         let numValid = 0;
         console.log(`processing ${count} kittens.`);
         kitdb.find().forEach((k) => {
-            // generation,is_fancy,is_exclusive,fancy_type,cooldown_index,soldPrice,cattribute1,cattribute2,cattribute3,cattribute4,cattribute5,cattribute6,cattribute7,cattribute8,color
+            // generation,is_fancy,is_exclusive,fancy_type,cooldown_index,num_children,soldPrice,cattribute1,cattribute2,cattribute3,cattribute4,cattribute5,cattribute6,cattribute7,cattribute8,color
             if(k.cattributes.length === 8 && k.sales.length > 0) {
-                let featureRow = `${k.generation},${k.is_fancy ? 1 : 0},${k.is_exclusive ? 1 : 0},${fancyTypes.indexOf(k.fancy_type)},${k.status.cooldown_index},`
+                let featureRow = `${k.generation},${k.is_fancy ? 1 : 0},${k.is_exclusive ? 1 : 0},${fancyTypes.indexOf(k.fancy_type)},${k.status.cooldown_index},${k.children.length},`
                 for(let i in k.cattributes) {
                     featureRow += `${cattributes.indexOf(k.cattributes[i].description)},`
                 }
                 featureRow += `${colors.indexOf(k.color)}\r\n`;
 
-                fs.appendFileSync(`features.dat`, featureRow);
-                fs.appendFileSync(`labels.dat`, `${k.sales[0].soldPrice}\r\n`);
+                fs.appendFileSync(`features_train.dat`, featureRow);
+                fs.appendFileSync(`labels_train.dat`, `${k.sales[0].soldPrice}\r\n`);
                 numValid++
             }
 
